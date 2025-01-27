@@ -4,6 +4,7 @@ import { UserController } from './user/user.controller';
 import { UserService } from './user/user.service';
 import { User, userSchema } from 'src/models/user.models';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -20,8 +21,6 @@ import * as bcrypt from 'bcrypt';
               const salt = await bcrypt.genSalt(10);
               user.password = await bcrypt.hash(user.password, salt);
             }
-
-            next();
           });
 
           return schema;
@@ -30,6 +29,6 @@ import * as bcrypt from 'bcrypt';
     ]),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, JwtService],
 })
 export class AuthModule {}
