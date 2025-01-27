@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { UserController } from './user/user.controller';
 import { UserService } from './user/user.service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { User, userSchema } from 'src/models/user.models';
-
 import * as bcrypt from 'bcrypt';
 
 @Module({
@@ -12,21 +11,25 @@ import * as bcrypt from 'bcrypt';
       {
         name: User.name,
         async useFactory() {
-          const schema = userSchema
+          const schema = userSchema;
+
           schema.pre('save', async function (next) {
-            if (this.isModified('password')) {
-              this.password = await bcrypt.hash(this.password, 10)
+            const user = this as any; // Explicitly typing `this`
+            
+            if (user.isModified('password')) {
+              const salt = await bcrypt.genSalt(10);
+              user.password = await bcrypt.hash(user.password, salt);
             }
-            next()
-          })
 
-          return schema
+            next();
+          });
 
-        }
-      }
-    ])
+          return schema;
+        },
+      },
+    ]),
   ],
   controllers: [UserController],
-  providers: [UserService]
+  providers: [UserService],
 })
 export class AuthModule {}
