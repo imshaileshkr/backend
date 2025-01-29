@@ -3,32 +3,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserController } from './user/user.controller';
 import { UserService } from './user/user.service';
 import { User, userSchema } from 'src/models/user.models';
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    MongooseModule.forFeatureAsync([
+    MongooseModule.forFeature([
       {
         name: User.name,
-        async useFactory() {
-          const schema = userSchema;
-
-          schema.pre('save', async function (next) {
-            const user = this as any; // Explicitly typing `this`
-            
-            if (user.isModified('password')) {
-              const salt = await bcrypt.genSalt(10);
-              user.password = await bcrypt.hash(user.password, salt);
-            }
-          });
-
-          return schema;
-        },
+        schema: userSchema
       },
     ]),
   ],
   controllers: [UserController],
-  providers: [UserService, JwtService],
+  providers: [UserService],
 })
 export class AuthModule {}

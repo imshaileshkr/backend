@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common';
 import { LoginDto, RegisterDto } from 'src/types/auth.dto';
 import { UserService } from './user.service';
+import { AuthGuard } from '../auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -22,5 +23,14 @@ export class UserController {
         @Post('/login')
         login(@Body() loginData:LoginDto){
             return this.userService.login(loginData)
+        }
+        @Delete('/delete')
+        deleteUser(@Query('id') id: string) {
+            return this.userService.deleteUser(id);
+        }
+        
+        @Get('/all')
+        getAllUsers() {
+            return this.userService.getAllUsers();
         }
 }

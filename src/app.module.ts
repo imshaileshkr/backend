@@ -24,25 +24,25 @@ console.log("🚀 ~ JWT_SECRET:", JWT_SECRET)
       }),
     }),
 
-    // JwtModule.registerAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: (configService: ConfigService) => {
-    //     return {
-            // global: true,
-    //       secret: configService.get<string>('JWT_SECRET'),
-    //       signOptions: {
-    //         expiresIn: configService.get<string>('JWT_EXPIRATION'),
-    //       },
-    //     };
-    //   },
-    // }),
-    JwtModule.register({
-      secret: JWT_SECRET,
-      signOptions: {
-        expiresIn: JWT_EXPIRES_IN,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      global: true,
+      useFactory: (configService: ConfigService) => {
+        return {
+          secret: configService.get<any>('JWT_SECRET'),
+          signOptions: {
+            expiresIn: configService.get<any>('JWT_EXPIRATION'),
+          },
+        };
       },
     }),
+    // JwtModule.register({
+    //   secret: JWT_SECRET,
+    //   signOptions: {
+    //     expiresIn: JWT_EXPIRES_IN,
+    //   },
+    // }),
   ],
   controllers: [AppController],
   providers: [AppService],
