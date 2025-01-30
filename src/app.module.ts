@@ -6,8 +6,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET,JWT_EXPIRES_IN } from 'constant';
-console.log("🚀 ~ JWT_EXPIRES_IN:", JWT_EXPIRES_IN)
-console.log("🚀 ~ JWT_SECRET:", JWT_SECRET)
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth/auth.guard';
 
 @Module({
   imports: [
@@ -45,6 +45,11 @@ console.log("🚀 ~ JWT_SECRET:", JWT_SECRET)
     // }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard, // Apply AuthGuard globally
+    },
+  ],
 })
 export class AppModule {}
