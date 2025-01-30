@@ -6,7 +6,6 @@ import { LoginDto, RegisterDto } from 'src/types/auth.dto';
 
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { JWT_SECRET } from 'constant';
 
 @Injectable()
 export class UserService {
@@ -52,10 +51,7 @@ export class UserService {
       if (!isMatch) {
           throw new BadRequestException('invalid credentials')
       }
-      const token =  this.jwtService.sign({ userId: user._id },{
-        secret:JWT_SECRET,
-        expiresIn: '7d'
-    })
+        const token = this.jwtService.sign({ userId: user._id })
       return {
           message: 'User logged in successfully',
           "token": token
