@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { LoginDto, RegisterDto } from 'src/types/auth.dto';
 import { UserService } from './user.service';
 import { Public } from '../public.decorator';
@@ -9,12 +9,6 @@ export class UserController {
     constructor(
         private readonly userService: UserService
     ) { }
-
-    @Get('/profile')
-    getProfile() {
-        return 'profile';
-    }
-
     @Public()
     @Post('/register')
     addUser(@Body() data: RegisterDto) {
@@ -33,5 +27,10 @@ export class UserController {
     @Get('/all')
     getAllUsers() {
         return this.userService.getAllUsers();
+    }
+    @Get('/profile')
+    async getProfile(@Req() req) {
+        const user = await req?.user
+        return this.userService.getProfile(user?.userId)
     }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { User } from 'src/models/user.models';
@@ -9,20 +9,13 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
-    async getAllUsers() {
-        const users = await this.userModel.find();
-        return {
-            message: 'users fetched successfully',
-            data: users
-        }
-    }
 
 
-    constructor( @InjectModel(User.name) private userModel: Model<User>, private jwtService: JwtService) {
+    constructor(@InjectModel(User.name) private userModel: Model<User>, private jwtService: JwtService) {
         console.log('JwtService is initialized:', this.jwtService);
     }
 
-    
+
     async addUser(data: RegisterDto) {
         const user = await this.userModel.findOne({ email: data.email.toLowerCase() })
         if (user) {
@@ -34,7 +27,7 @@ export class UserService {
             password: data.password
         })
 
-        const token =  this.jwtService.sign({ userId: userData._id })
+        const token = this.jwtService.sign({ userId: userData._id })
         return {
             message: 'user created',
             data: userData,
@@ -42,38 +35,60 @@ export class UserService {
         }
     }
 
-    async login(data: LoginDto){
-      const user = await this.userModel.findOne({ email: data.email.toLowerCase() })
-      if (!user) {
-          throw new BadRequestException('user not found')
-      }
-      const isMatch = await bcrypt.compare(data.password, user.password)
-      if (!isMatch) {
-          throw new BadRequestException('invalid credentials')
-      }
+    async login(data: LoginDto) {
+        const user = await this.userModel.findOne({ email: data.email.toLowerCase() })
+        if (!user) {
+            throw new BadRequestException('user not found')
+        }
+        const isMatch = await bcrypt.compare(data.password, user.password)
+        if (!isMatch) {
+            throw new BadRequestException('invalid credentials')
+        }
         const token = this.jwtService.sign({ userId: user._id })
-      return {
-          message: 'User logged in successfully',
-          "token": token
-      }
+        return {
+            message: 'User logged in successfully',
+            data: user,
+            access_token: token
+        }
+    }
+
+
+    async getProfile(userId: string) {
+        if (!userId) throw new UnauthorizedException('Please Login')
+        const user = await this.userModel.findById(userId).select(['-password', '-__v']).lean()
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return {
+            message: 'User profile fetched successfully',
+            data: user
+        }
+    }
+
+    async getAllUsers() {
+        const users = await this.userModel.find().select(['-password', '-__v']).lean()
+        return {
+            message: 'users fetched successfully',
+            data: users
+        }
     }
 
     async deleteUser(id: string) {
         console.log("🚀 ~ UserService ~ deleteUser ~ id:", id);
-    
+
         // Validate the ID format (MongoDB ObjectId validation)
         if (!Types.ObjectId.isValid(id)) {
             throw new BadRequestException('Invalid user ID format');
         }
-    
+
         // Use `findByIdAndDelete` directly and check if user existed
         const user = await this.userModel.findByIdAndDelete(id);
-        
+
         if (!user) {
             throw new NotFoundException('User not found');
         }
-    
+
         return { message: 'User deleted successfully' };
     }
-    
+
 }
