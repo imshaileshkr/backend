@@ -5,7 +5,6 @@ import { AuthModule } from './auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { JWT_SECRET,JWT_EXPIRES_IN } from 'constant';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/auth.guard';
 
@@ -37,12 +36,6 @@ import { AuthGuard } from './auth/auth.guard';
         };
       },
     }),
-    // JwtModule.register({
-    //   secret: JWT_SECRET,
-    //   signOptions: {
-    //     expiresIn: JWT_EXPIRES_IN,
-    //   },
-    // }),
   ],
   controllers: [AppController],
   providers: [AppService,
