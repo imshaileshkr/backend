@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { JWT_SECRET } from 'constant';
 import { Observable, throwError } from 'rxjs';
 import { IS_PUBLIC_KEY } from './public.decorator';
 
