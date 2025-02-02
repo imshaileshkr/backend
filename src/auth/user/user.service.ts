@@ -12,14 +12,13 @@ export class UserService {
 
 
     constructor(@InjectModel(User.name) private userModel: Model<User>, private jwtService: JwtService) {
-        console.log('JwtService is initialized:', this.jwtService);
     }
 
 
     async addUser(data: RegisterDto) {
         const user = await this.userModel.findOne({ email: data.email.toLowerCase() })
         if (user) {
-            throw new BadRequestException('user already exists')
+            throw new BadRequestException('User already exists')
         }
         const userData = await this.userModel.create({
             email: data.email,
@@ -30,15 +29,18 @@ export class UserService {
         const token = this.jwtService.sign({ userId: userData._id })
         return {
             message: 'user created',
-            data: userData,
-            token: token
-        }
+            user: {
+                email: userData.email,
+                name: userData.name,
+            },
+            token: token,
+        };
     }
 
     async login(data: LoginDto) {
         const user = await this.userModel.findOne({ email: data.email.toLowerCase() })
         if (!user) {
-            throw new BadRequestException('user not found')
+            throw new BadRequestException('User not found')
         }
         const isMatch = await bcrypt.compare(data.password, user.password)
         if (!isMatch) {
@@ -54,7 +56,7 @@ export class UserService {
 
 
     async getProfile(userId: string) {
-        if (!userId) throw new UnauthorizedException('Please Login')
+        if (!userId) throw new UnauthorizedException('Unauthorized access')
         const user = await this.userModel.findById(userId).select(['-password', '-__v']).lean()
         if (!user) {
             throw new NotFoundException('User not found');
@@ -68,14 +70,12 @@ export class UserService {
     async getAllUsers() {
         const users = await this.userModel.find().select(['-password', '-__v']).lean()
         return {
-            message: 'users fetched successfully',
+            message: 'Users fetched successfully',
             data: users
         }
     }
 
     async deleteUser(id: string) {
-        console.log("🚀 ~ UserService ~ deleteUser ~ id:", id);
-
         // Validate the ID format (MongoDB ObjectId validation)
         if (!Types.ObjectId.isValid(id)) {
             throw new BadRequestException('Invalid user ID format');
