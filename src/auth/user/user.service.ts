@@ -33,7 +33,7 @@ export class UserService {
                 email: userData.email,
                 name: userData.name,
             },
-            token: token,
+            access_token: token,
         };
     }
 
@@ -49,7 +49,10 @@ export class UserService {
         const token = this.jwtService.sign({ userId: user._id })
         return {
             message: 'User logged in successfully',
-            data: user,
+            user: {
+                email: user.email,
+                name: user.name
+            },
             access_token: token
         }
     }
